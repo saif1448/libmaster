@@ -1,46 +1,47 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
+#include <fstream>
 #include <vector>
 #include <string>
-#include "Frame.h" // Include the Frame class
-
-using namespace std;
 
 class Video
 {
 public:
-    vector<Frame> frames; // List of frames in the video
-    int width;            // Width of each frame
-    int height;           // Height of each frame
-    int totalFrames;      // Total number of frames in the video
+    Video(const std::string &filename);
+    ~Video();
 
-    // Constructor: Initializes the video with dimensions and frame count from the .bin file
-    Video(const string &binFilePath);
+    // Getter methods
+    long getNumFrames() const;
+    unsigned char getChannels() const;
+    unsigned char getHeight() const;
+    unsigned char getWidth() const;
+    // Getter for frameData
+    const std::vector<std::vector<std::vector<std::vector<unsigned char>>>> &getFrameData() const;
 
-    // Method to load frames from a combined .bin file
-    void loadFromBin(const string &inputBinPath);
+    // Operations that create a new output file
+    void reverse(const std::string &outputFilename);
+    void swapChannels(unsigned char channel1, unsigned char channel2, const std::string &outputFilename);
+    void clipChannel(unsigned char channel, unsigned char min, unsigned char max, const std::string &outputFilename);
+    void scaleChannel(unsigned char channel, float scaleFactor, const std::string &outputFilename);
 
-    // Method to modify all frames in the video (operation as a placeholder for future operations)
-    void modifyFrames(void (*operation)(Frame &));
+    void saveToFile(const std::string &filename);
 
-    // Method to save the modified frames to a new combined .bin file
-    void saveToCombinedBin(const string &outputBinPath);
+    void printHeader() const;
 
-    // Method to reverse the entire video
-    void reverse();
+private:
+    long numFrames;
+    unsigned char channels;
+    unsigned char height;
+    unsigned char width;
 
-    // Method to swap channels in video frames
-    void swap_channel(unsigned char channel1, unsigned char channel2);
+    std::vector<std::vector<std::vector<std::vector<unsigned char>>>> frameData;
 
-    // Method to clip the range of each pixel in each frame
-    void clip_channel(unsigned char channel, unsigned char min, unsigned char max);
+    void readHeader(std::ifstream &file);    // Declare readHeader
+    void readFrameData(std::ifstream &file); // Declare readFrameData
 
-    // Method to scale the channel values in each frame
-    void scale_channel(unsigned char channel, float scaleFactor);
-    
-    // Extract video dimensions and frame count from the .bin file
-    void extractMP4Dimensions(const string &binFilePath);
+    // Helper method to create a deep copy of frameData
+    std::vector<std::vector<std::vector<std::vector<unsigned char>>>> copyFrameData() const;
 };
 
 #endif // VIDEO_H

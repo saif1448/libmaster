@@ -1,26 +1,24 @@
-#include <iostream>
 #include "Video.h"
+#include <iostream>
 
 using namespace std;
 
 int main()
 {
-    string inputBinPath = "path_to_video.bin";  // Path to your input video binary file
-    string outputBinPath = "swapped_video.bin"; // Path to save the modified video binary file
+    // Load the video from the input file
+    Video video("scaled.bin");
 
-    // Create a Video object from the binary file
-    Video video(inputBinPath);
+    // Print the header information
+    cout << "Input Video Header Information:" << endl;
+    video.printHeader();
 
-    // Load frames from the binary file into the Video object
-    video.loadFromBin(inputBinPath);
+    // // Perform operations and save to separate output files
+    // video.reverse("reversed.bin"); // Reverse the video and save to "reversed.bin"
+    // video.swapChannels(0, 1, "swapped.bin"); // Swap channels 0 and 1 and save to "swapped.bin"
+    // video.clipChannel(2, 50, 200, "clipped.bin"); // Clip channel 2 and save to "clipped.bin"
+    // video.scaleChannel(0, 1.5f, "scaled.bin"); // Scale channel 0 and save to "scaled.bin"
 
-    // Swap channels in the video (example: swap Red (0) and Green (1))
-    video.swap_channel(0, 1); // Swapping Red and Green channels (0 for Red, 1 for Green)
-
-    // Save the modified video to a new .bin file
-    video.saveToCombinedBin(outputBinPath);
-
-    cout << "Channel swap completed. The modified video has been saved to: " << outputBinPath << endl;
+    // cout << "Operations completed. Output files created." << endl;
 
     return 0;
 }
