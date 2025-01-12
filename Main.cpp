@@ -1,24 +1,95 @@
-#include "Video.h"
 #include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include "Video.h"
 
-using namespace std;
-
-int main()
+void printUsage()
 {
-    // Load the video from the input file
-    Video video("scaled.bin");
+    std::cerr << "Usage: ./runme [input] [output] [-S/-M] [function] [options]" << std::endl;
+    std::cerr << "Functions:" << std::endl;
+    std::cerr << "  reverse" << std::endl;
+    std::cerr << "  swap_channel [channel1],[channel2]" << std::endl;
+    std::cerr << "  clip_channel [channel] [min],[max]" << std::endl;
+    std::cerr << "  scale_channel [channel] [scaleFactor]" << std::endl;
+}
 
-    // Print the header information
-    cout << "Input Video Header Information:" << endl;
-    video.printHeader();
+int main(int argc, char *argv[])
+{
+    if (argc < 4)
+    {
+        printUsage();
+        return 1;
+    }
 
-    // // Perform operations and save to separate output files
-    // video.reverse("reversed.bin"); // Reverse the video and save to "reversed.bin"
-    // video.swapChannels(0, 1, "swapped.bin"); // Swap channels 0 and 1 and save to "swapped.bin"
-    // video.clipChannel(2, 50, 200, "clipped.bin"); // Clip channel 2 and save to "clipped.bin"
-    // video.scaleChannel(0, 1.5f, "scaled.bin"); // Scale channel 0 and save to "scaled.bin"
+    std::string inputFile = argv[1];
+    std::string outputFile = argv[2];
+    std::string optimizationFlag = argv[3];
+    std::string functionName = argv[4];
 
-    // cout << "Operations completed. Output files created." << endl;
+    Video video(inputFile);
+
+    try
+    {
+        if (functionName == "reverse")
+        {
+            video.reverse(outputFile);
+        }
+        else if (functionName == "swap_channel")
+        {
+            if (argc < 6)
+            {
+                printUsage();
+                return 1;
+            }
+            std::string channels = argv[5];
+            std::istringstream iss(channels);
+            std::string channel1Str, channel2Str;
+            std::getline(iss, channel1Str, ',');
+            std::getline(iss, channel2Str, ',');
+            unsigned char channel1 = std::stoi(channel1Str);
+            unsigned char channel2 = std::stoi(channel2Str);
+            video.swapChannels(channel1, channel2, outputFile);
+        }
+        else if (functionName == "clip_channel")
+        {
+            if (argc < 7)
+            {
+                printUsage();
+                return 1;
+            }
+            unsigned char channel = std::stoi(argv[5]);
+            std::string range = argv[6];
+            std::istringstream iss(range);
+            std::string minStr, maxStr;
+            std::getline(iss, minStr, ',');
+            std::getline(iss, maxStr, ',');
+            unsigned char min = std::stoi(minStr);
+            unsigned char max = std::stoi(maxStr);
+            video.clipChannel(channel, min, max, outputFile);
+        }
+        else if (functionName == "scale_channel")
+        {
+            if (argc < 7)
+            {
+                printUsage();
+                return 1;
+            }
+            unsigned char channel = std::stoi(argv[5]);
+            float scaleFactor = std::stof(argv[6]);
+            video.scaleChannel(channel, scaleFactor, outputFile);
+        }
+        else
+        {
+            printUsage();
+            return 1;
+        }
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
+    }
 
     return 0;
 }

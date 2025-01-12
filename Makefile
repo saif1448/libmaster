@@ -1,41 +1,29 @@
-# all: Main.cpp Frame.cpp Frame.h
-# 	g++ -o runme Main.cpp Frame.cpp Video.cpp
+CXX = g++
+CXXFLAGS = -std=c++11 -Wall -Wextra -O2
+LDFLAGS = -L. -lFilmMaster2000
 
-# clean:
-# 	rm -f runme
+SRCS = Video.cpp main.cpp
+OBJS = $(SRCS:.cpp=.o)
 
-# all: runme
+all: libFilmMaster2000.a runme
 
-# runme: Main.o VideoN.o
-# 	g++ -o runme Main.o VideoN.o
+libFilmMaster2000.a: Video.o
+	ar rcs libFilmMaster2000.a Video.o
 
-# Main.o: Main.cpp VideoN.h
-# 	g++ -c Main.cpp
-
-# VideoN.o: VideoN.cpp VideoN.h
-# 	g++ -c VideoN.cpp
-
-# clean:
-# 	rm -f runme Main.o VideoN.o
-
-
-# Makefile
-
-# Target executable
-all: runme
-
-# Link object files to create the executable
-runme: Main.o Video.o
-	g++ -o runme Main.o Video.o
-
-# Compile Main.cpp into Main.o
-Main.o: Main.cpp Video.h
-	g++ -c Main.cpp
-
-# Compile Video.cpp into Video.o
 Video.o: Video.cpp Video.h
-	g++ -c Video.cpp
+	$(CXX) $(CXXFLAGS) -c Video.cpp -o Video.o
 
-# Clean up build files
+main.o: main.cpp Video.h
+	$(CXX) $(CXXFLAGS) -c main.cpp -o main.o
+
+runme: main.o libFilmMaster2000.a
+	$(CXX) $(CXXFLAGS) main.o -o runme $(LDFLAGS)
+
+test: runme
+	./runme input.bin output.bin -S reverse
+	./runme input.bin output.bin -S swap_channel 1,2
+	./runme input.bin output.bin -S clip_channel 1 10,200
+	./runme input.bin output.bin -S scale_channel 1 1.5
+
 clean:
-	rm -f runme Main.o Video.o
+	rm -f *.o libFilmMaster2000.a runme
