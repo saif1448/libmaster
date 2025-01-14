@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm> // For std::reverse and std::swap
+#include <omp.h>
 
 Video::Video(const std::string &filename)
 {
@@ -73,6 +74,22 @@ void Video::reverse(const std::string &outputFilename)
     outputVideo.saveToFile(outputFilename);             // Save to the output file
 }
 
+void Video::reverseMultiThreaded(const std::string &outputFilename)
+{
+    auto copiedData = copyFrameData(); // Create a copy of the frame data
+
+// Reverse the copied data in parallel
+#pragma omp parallel for
+    for (long f = 0; f < numFrames; ++f)
+    {
+        std::reverse(copiedData[f].begin(), copiedData[f].end());
+    }
+
+    Video outputVideo = *this;              // Create a copy of the current video object
+    outputVideo.frameData = copiedData;     // Replace the frame data with the reversed data
+    outputVideo.saveToFile(outputFilename); // Save to the output file
+}
+
 // Swap channels and save to a new file
 void Video::swapChannels(unsigned char channel1, unsigned char channel2, const std::string &outputFilename)
 {
@@ -90,6 +107,26 @@ void Video::swapChannels(unsigned char channel1, unsigned char channel2, const s
     Video outputVideo = *this;              // Create a copy of the current video object
     outputVideo.frameData = copiedData;     // Replace the frame data with the modified data
     outputVideo.saveToFile(outputFilename); // Save to the output file
+}
+
+// Multi-threaded swapChannels (OpenMP)
+void Video::swapChannelsMultiThreaded(unsigned char channel1, unsigned char channel2, const std::string &outputFilename)
+{
+    auto copiedData = copyFrameData();
+#pragma omp parallel for
+    for (long f = 0; f < numFrames; ++f)
+    {
+        for (unsigned char h = 0; h < height; ++h)
+        {
+            for (unsigned char w = 0; w < width; ++w)
+            {
+                std::swap(copiedData[f][channel1][h][w], copiedData[f][channel2][h][w]);
+            }
+        }
+    }
+    Video outputVideo = *this;
+    outputVideo.frameData = copiedData;
+    outputVideo.saveToFile(outputFilename);
 }
 
 // Clip a channel and save to a new file
@@ -114,6 +151,29 @@ void Video::clipChannel(unsigned char channel, unsigned char min, unsigned char 
     outputVideo.saveToFile(outputFilename); // Save to the output file
 }
 
+// Multi-threaded clipChannel (OpenMP)
+void Video::clipChannelMultiThreaded(unsigned char channel, unsigned char min, unsigned char max, const std::string &outputFilename)
+{
+    auto copiedData = copyFrameData();
+#pragma omp parallel for
+    for (long f = 0; f < numFrames; ++f)
+    {
+        for (unsigned char h = 0; h < height; ++h)
+        {
+            for (unsigned char w = 0; w < width; ++w)
+            {
+                if (copiedData[f][channel][h][w] < min)
+                    copiedData[f][channel][h][w] = min;
+                if (copiedData[f][channel][h][w] > max)
+                    copiedData[f][channel][h][w] = max;
+            }
+        }
+    }
+    Video outputVideo = *this;
+    outputVideo.frameData = copiedData;
+    outputVideo.saveToFile(outputFilename);
+}
+
 // Scale a channel and save to a new file
 void Video::scaleChannel(unsigned char channel, float scaleFactor, const std::string &outputFilename)
 {
@@ -131,6 +191,26 @@ void Video::scaleChannel(unsigned char channel, float scaleFactor, const std::st
     Video outputVideo = *this;              // Create a copy of the current video object
     outputVideo.frameData = copiedData;     // Replace the frame data with the modified data
     outputVideo.saveToFile(outputFilename); // Save to the output file
+}
+
+// Multi-threaded scaleChannel (OpenMP)
+void Video::scaleChannelMultiThreaded(unsigned char channel, float scaleFactor, const std::string &outputFilename)
+{
+    auto copiedData = copyFrameData();
+#pragma omp parallel for
+    for (long f = 0; f < numFrames; ++f)
+    {
+        for (unsigned char h = 0; h < height; ++h)
+        {
+            for (unsigned char w = 0; w < width; ++w)
+            {
+                copiedData[f][channel][h][w] = static_cast<unsigned char>(copiedData[f][channel][h][w] * scaleFactor);
+            }
+        }
+    }
+    Video outputVideo = *this;
+    outputVideo.frameData = copiedData;
+    outputVideo.saveToFile(outputFilename);
 }
 
 void Video::saveToFile(const std::string &filename)

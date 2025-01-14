@@ -31,58 +31,118 @@ int main(int argc, char *argv[])
 
     try
     {
-        if (functionName == "reverse")
+        if (optimizationFlag == "-M")
         {
-            video.reverse(outputFile);
-        }
-        else if (functionName == "swap_channel")
-        {
-            if (argc < 6)
+
+            if (functionName == "reverse")
+            {
+                video.reverse(outputFile);
+            }
+            else if (functionName == "swap_channel")
+            {
+                if (argc < 6)
+                {
+                    printUsage();
+                    return 1;
+                }
+                std::string channels = argv[5];
+                std::istringstream iss(channels);
+                std::string channel1Str, channel2Str;
+                std::getline(iss, channel1Str, ',');
+                std::getline(iss, channel2Str, ',');
+                unsigned char channel1 = std::stoi(channel1Str);
+                unsigned char channel2 = std::stoi(channel2Str);
+                video.swapChannels(channel1, channel2, outputFile);
+            }
+            else if (functionName == "clip_channel")
+            {
+                if (argc < 7)
+                {
+                    printUsage();
+                    return 1;
+                }
+                unsigned char channel = std::stoi(argv[5]);
+                std::string range = argv[6];
+                std::istringstream iss(range);
+                std::string minStr, maxStr;
+                std::getline(iss, minStr, ',');
+                std::getline(iss, maxStr, ',');
+                unsigned char min = std::stoi(minStr);
+                unsigned char max = std::stoi(maxStr);
+                video.clipChannel(channel, min, max, outputFile);
+            }
+            else if (functionName == "scale_channel")
+            {
+                if (argc < 7)
+                {
+                    printUsage();
+                    return 1;
+                }
+                unsigned char channel = std::stoi(argv[5]);
+                float scaleFactor = std::stof(argv[6]);
+                video.scaleChannel(channel, scaleFactor, outputFile);
+            }
+            else
             {
                 printUsage();
                 return 1;
             }
-            std::string channels = argv[5];
-            std::istringstream iss(channels);
-            std::string channel1Str, channel2Str;
-            std::getline(iss, channel1Str, ',');
-            std::getline(iss, channel2Str, ',');
-            unsigned char channel1 = std::stoi(channel1Str);
-            unsigned char channel2 = std::stoi(channel2Str);
-            video.swapChannels(channel1, channel2, outputFile);
         }
-        else if (functionName == "clip_channel")
+        else if (optimizationFlag == "-S")
         {
-            if (argc < 7)
+            if (functionName == "reverse")
+            {
+                video.reverseMultiThreaded(outputFile);
+            }
+            else if (functionName == "swap_channel")
+            {
+                if (argc < 6)
+                {
+                    printUsage();
+                    return 1;
+                }
+                std::string channels = argv[5];
+                std::istringstream iss(channels);
+                std::string channel1Str, channel2Str;
+                std::getline(iss, channel1Str, ',');
+                std::getline(iss, channel2Str, ',');
+                unsigned char channel1 = std::stoi(channel1Str);
+                unsigned char channel2 = std::stoi(channel2Str);
+                video.swapChannelsMultiThreaded(channel1, channel2, outputFile);
+            }
+            else if (functionName == "clip_channel")
+            {
+                if (argc < 7)
+                {
+                    printUsage();
+                    return 1;
+                }
+                unsigned char channel = std::stoi(argv[5]);
+                std::string range = argv[6];
+                std::istringstream iss(range);
+                std::string minStr, maxStr;
+                std::getline(iss, minStr, ',');
+                std::getline(iss, maxStr, ',');
+                unsigned char min = std::stoi(minStr);
+                unsigned char max = std::stoi(maxStr);
+                video.clipChannelMultiThreaded(channel, min, max, outputFile);
+            }
+            else if (functionName == "scale_channel")
+            {
+                if (argc < 7)
+                {
+                    printUsage();
+                    return 1;
+                }
+                unsigned char channel = std::stoi(argv[5]);
+                float scaleFactor = std::stof(argv[6]);
+                video.scaleChannelMultiThreaded(channel, scaleFactor, outputFile);
+            }
+            else
             {
                 printUsage();
                 return 1;
             }
-            unsigned char channel = std::stoi(argv[5]);
-            std::string range = argv[6];
-            std::istringstream iss(range);
-            std::string minStr, maxStr;
-            std::getline(iss, minStr, ',');
-            std::getline(iss, maxStr, ',');
-            unsigned char min = std::stoi(minStr);
-            unsigned char max = std::stoi(maxStr);
-            video.clipChannel(channel, min, max, outputFile);
-        }
-        else if (functionName == "scale_channel")
-        {
-            if (argc < 7)
-            {
-                printUsage();
-                return 1;
-            }
-            unsigned char channel = std::stoi(argv[5]);
-            float scaleFactor = std::stof(argv[6]);
-            video.scaleChannel(channel, scaleFactor, outputFile);
-        }
-        else
-        {
-            printUsage();
-            return 1;
         }
     }
     catch (const std::exception &e)

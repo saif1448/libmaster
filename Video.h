@@ -20,10 +20,18 @@ public:
     const std::vector<std::vector<std::vector<std::vector<unsigned char>>>> &getFrameData() const;
 
     // Operations that create a new output file
+
+    //Single Threaded
     void reverse(const std::string &outputFilename);
     void swapChannels(unsigned char channel1, unsigned char channel2, const std::string &outputFilename);
     void clipChannel(unsigned char channel, unsigned char min, unsigned char max, const std::string &outputFilename);
     void scaleChannel(unsigned char channel, float scaleFactor, const std::string &outputFilename);
+
+    // Multi-threaded operations (OpenMP)
+    void reverseMultiThreaded(const std::string &outputFilename);
+    void swapChannelsMultiThreaded(unsigned char channel1, unsigned char channel2, const std::string &outputFilename);
+    void clipChannelMultiThreaded(unsigned char channel, unsigned char min, unsigned char max, const std::string &outputFilename);
+    void scaleChannelMultiThreaded(unsigned char channel, float scaleFactor, const std::string &outputFilename);
 
     void saveToFile(const std::string &filename);
 
