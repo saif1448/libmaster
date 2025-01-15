@@ -56,10 +56,14 @@ runme: main.o libFilmMaster2000.a
 	$(CXX) $(CXXFLAGS) $(OPENMP_FLAG) main.o -o runme $(LDFLAGS)
 
 test: runme
-	./runme input.bin output.bin -S reverse
-	./runme input.bin output.bin -S swap_channel 1,2
-	./runme input.bin output.bin -S clip_channel 1 10,200
-	./runme input.bin output.bin -S scale_channel 1 1.5
+	./runme test.bin rev_s.bin -S reverse
+	./runme test.bin swap_s.bin -S swap_channel 1,2
+	./runme test.bin clip_s.bin -S clip_channel 1 [10,200]
+	./runme test.bin scale_s.bin -S scale_channel 1 1.5
+	./runme test.bin rev_m.bin -M reverse
+	./runme test.bin swap_m.bin -M swap_channel 1,2
+	./runme test.bin clip_m.bin -M clip_channel 1 [10,200]
+	./runme test.bin scale_m.bin -M scale_channel 1 1.5
 
 clean:
-	rm -f *.o libFilmMaster2000.a runme
+	rm -f *.o libFilmMaster2000.a rev_s.bin swap_s.bin clip_s.bin scale_s.bin rev_m.bin swap_m.bin clip_m.bin scale_m.bin runme

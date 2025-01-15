@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <algorithm> // For std::remove_if
 #include "Video.h"
 
 void printUsage()
@@ -10,8 +11,18 @@ void printUsage()
     std::cerr << "Functions:" << std::endl;
     std::cerr << "  reverse" << std::endl;
     std::cerr << "  swap_channel [channel1],[channel2]" << std::endl;
-    std::cerr << "  clip_channel [channel] [min],[max]" << std::endl;
+    std::cerr << "  clip_channel [channel] [min,max]" << std::endl;
     std::cerr << "  scale_channel [channel] [scaleFactor]" << std::endl;
+}
+
+// Helper function to remove square brackets from a string
+std::string removeSquareBrackets(const std::string &str)
+{
+    std::string result = str;
+    result.erase(std::remove_if(result.begin(), result.end(), [](char c)
+                                { return c == '[' || c == ']'; }),
+                 result.end());
+    return result;
 }
 
 int main(int argc, char *argv[])
@@ -33,7 +44,6 @@ int main(int argc, char *argv[])
     {
         if (optimizationFlag == "-M")
         {
-
             if (functionName == "reverse")
             {
                 video.reverse(outputFile);
@@ -62,7 +72,7 @@ int main(int argc, char *argv[])
                     return 1;
                 }
                 unsigned char channel = std::stoi(argv[5]);
-                std::string range = argv[6];
+                std::string range = removeSquareBrackets(argv[6]); // Remove square brackets
                 std::istringstream iss(range);
                 std::string minStr, maxStr;
                 std::getline(iss, minStr, ',');
@@ -118,7 +128,7 @@ int main(int argc, char *argv[])
                     return 1;
                 }
                 unsigned char channel = std::stoi(argv[5]);
-                std::string range = argv[6];
+                std::string range = removeSquareBrackets(argv[6]); // Remove square brackets
                 std::istringstream iss(range);
                 std::string minStr, maxStr;
                 std::getline(iss, minStr, ',');
@@ -143,6 +153,11 @@ int main(int argc, char *argv[])
                 printUsage();
                 return 1;
             }
+        }
+        else
+        {
+            printUsage();
+            return 1;
         }
     }
     catch (const std::exception &e)
