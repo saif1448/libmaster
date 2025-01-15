@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm> // For std::reverse and std::swap
 #include <omp.h>
+#include <chrono>
 
 Video::Video(const std::string &filename)
 {
@@ -110,6 +111,9 @@ void Video::reverseMultiThreaded(const std::string &outputFilename)
 // Swap channels and save to a new file
 void Video::swapChannels(unsigned char channel1, unsigned char channel2, const std::string &outputFilename)
 {
+
+    auto start = std::chrono::high_resolution_clock::now();
+
     auto copiedData = copyFrameData(); // Create a copy of the frame data
     for (long f = 0; f < numFrames; ++f)
     {
@@ -124,11 +128,18 @@ void Video::swapChannels(unsigned char channel1, unsigned char channel2, const s
     Video outputVideo = *this;              // Create a copy of the current video object
     outputVideo.frameData = copiedData;     // Replace the frame data with the modified data
     outputVideo.saveToFile(outputFilename); // Save to the output file
+
+    auto end = std::chrono::high_resolution_clock::now();                               // Stop timer
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start); // Calculate duration
+    std::cout << "swap took " << duration.count() << " milliseconds." << std::endl;
 }
 
 // Multi-threaded swapChannels (OpenMP)
 void Video::swapChannelsMultiThreaded(unsigned char channel1, unsigned char channel2, const std::string &outputFilename)
 {
+
+    auto start = std::chrono::high_resolution_clock::now();
+
     auto copiedData = copyFrameData();
 // #pragma omp parallel for
 #pragma omp parallel for collapse(3)
@@ -145,6 +156,10 @@ void Video::swapChannelsMultiThreaded(unsigned char channel1, unsigned char chan
     Video outputVideo = *this;
     outputVideo.frameData = copiedData;
     outputVideo.saveToFile(outputFilename);
+
+    auto end = std::chrono::high_resolution_clock::now();                               // Stop timer
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start); // Calculate duration
+    std::cout << "swap par took " << duration.count() << " milliseconds." << std::endl;
 }
 
 // Clip a channel and save to a new file
