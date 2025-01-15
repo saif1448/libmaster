@@ -1,6 +1,5 @@
 #include "Video.h"
 #include <iostream>
-#include <fstream>
 #include <algorithm> // For std::reverse and std::swap
 #include <omp.h>
 

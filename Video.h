@@ -3,8 +3,6 @@
 
 #include <fstream>
 #include <vector>
-#include <string>
-
 class Video
 {
 public:
@@ -21,7 +19,7 @@ public:
 
     // Operations that create a new output file
 
-    //Single Threaded
+    // Single Threaded
     void reverse(const std::string &outputFilename);
     void swapChannels(unsigned char channel1, unsigned char channel2, const std::string &outputFilename);
     void clipChannel(unsigned char channel, unsigned char min, unsigned char max, const std::string &outputFilename);
