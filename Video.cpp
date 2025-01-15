@@ -33,7 +33,7 @@ void Video::readFrameData(std::ifstream &file)
     frameData.resize(numFrames, std::vector<std::vector<std::vector<unsigned char>>>(
                                     channels, std::vector<std::vector<unsigned char>>(
                                                   height, std::vector<unsigned char>(width))));
-
+    // #pragma omp parallel for
     for (long f = 0; f < numFrames; ++f)
     {
         for (unsigned char c = 0; c < channels; ++c)
@@ -73,22 +73,40 @@ void Video::reverse(const std::string &outputFilename)
     outputVideo.saveToFile(outputFilename);             // Save to the output file
 }
 
+// void Video::reverseMultiThreaded(const std::string &outputFilename)
+// {
+//     auto copiedData = copyFrameData(); // Create a copy of the frame data
+
+// // Reverse the copied data in parallel
+// #pragma omp parallel for
+//     for (long f = 0; f < numFrames; ++f)
+//     {
+//         std::reverse(copiedData[f].begin(), copiedData[f].end());
+//     }
+
+//     Video outputVideo = *this;              // Create a copy of the current video object
+//     outputVideo.frameData = copiedData;     // Replace the frame data with the reversed data
+//     outputVideo.saveToFile(outputFilename); // Save to the output file
+// }
+
 void Video::reverseMultiThreaded(const std::string &outputFilename)
 {
     auto copiedData = copyFrameData(); // Create a copy of the frame data
 
-// Reverse the copied data in parallel
+    // Manually reverse the order of the frames in parallel
+    auto numFrames = copiedData.size();
+    auto *dataPtr = copiedData.data(); // Pointer to the frame data
+
 #pragma omp parallel for
-    for (long f = 0; f < numFrames; ++f)
+    for (size_t i = 0; i < numFrames / 2; ++i)
     {
-        std::reverse(copiedData[f].begin(), copiedData[f].end());
+        std::swap(dataPtr[i], dataPtr[numFrames - 1 - i]);
     }
 
     Video outputVideo = *this;              // Create a copy of the current video object
     outputVideo.frameData = copiedData;     // Replace the frame data with the reversed data
     outputVideo.saveToFile(outputFilename); // Save to the output file
 }
-
 // Swap channels and save to a new file
 void Video::swapChannels(unsigned char channel1, unsigned char channel2, const std::string &outputFilename)
 {
@@ -112,7 +130,8 @@ void Video::swapChannels(unsigned char channel1, unsigned char channel2, const s
 void Video::swapChannelsMultiThreaded(unsigned char channel1, unsigned char channel2, const std::string &outputFilename)
 {
     auto copiedData = copyFrameData();
-#pragma omp parallel for
+// #pragma omp parallel for
+#pragma omp parallel for collapse(3)
     for (long f = 0; f < numFrames; ++f)
     {
         for (unsigned char h = 0; h < height; ++h)
@@ -154,7 +173,8 @@ void Video::clipChannel(unsigned char channel, unsigned char min, unsigned char 
 void Video::clipChannelMultiThreaded(unsigned char channel, unsigned char min, unsigned char max, const std::string &outputFilename)
 {
     auto copiedData = copyFrameData();
-#pragma omp parallel for
+// #pragma omp parallel for
+#pragma omp parallel for collapse(3)
     for (long f = 0; f < numFrames; ++f)
     {
         for (unsigned char h = 0; h < height; ++h)
@@ -228,6 +248,7 @@ void Video::saveToFile(const std::string &filename)
     file.write(reinterpret_cast<char *>(&width), sizeof(unsigned char));
 
     // Write the frame data in the correct order
+    // #pragma omp parallel for
     for (long f = 0; f < numFrames; ++f)
     {
         for (unsigned char c = 0; c < channels; ++c)
